@@ -119,24 +119,21 @@ export const getAllUsers = async (req: Request, res: Response) => {
     const users = await User.find().select('-password -resetToken -resetTokenExpiry');
 
     const transformedUsers = users.map(user => ({
-      user_id : user.id,
+      user_id: user._id,
       name: `${user.first_name} ${user.last_name}`,
       email: user.email,
       role: user.role,
-      avatar: user.avatar,
-      plan: "Enterprise", 
-      billing: "Auto Debit", 
-      status: user.role === 'admin' ? 'Active' : user.role === 'viewer' ? 'Pending' : 'Inactive'
+      avatar: user.avatar || `https://ui-avatars.com/api/?name=${user.first_name}+${user.last_name}`,
+      status: user.active ? 'Active' : 'Inactive'
     }));
 
-    
     res.status(200).json({ users: transformedUsers });
-  } 
-  catch (error) {
+  } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ message: "Server error" });
   }
-}
+};
+
 
 
 export const UserCreate = async (req: Request, res: Response) => {

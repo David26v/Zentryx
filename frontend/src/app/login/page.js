@@ -54,7 +54,8 @@ const Login = () => {
       localStorage.setItem("authToken", result.token);
       localStorage.setItem("username", data.usernameOrEmail);
   
-      const role = result.role || "viewer";
+      const role = result.role;
+
   
       showAlert("Login successful!", "success");
   
@@ -66,9 +67,8 @@ const Login = () => {
         case "user":
           router.push("/users/dashboard");
           break;
-        case "viewer":
         default:
-          router.push("/viewer/dashboard");
+          router.push("/admin/dashboard");
           break;
       }
     } catch (e) {

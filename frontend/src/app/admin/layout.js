@@ -5,7 +5,7 @@ import Sidebar from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
 
 export default function AdminLayout({ children }) {
-  const [openSidebar, setOpenSidebar] = useState(false);
+  const [openSidebar, setOpenSidebar] = useState(true);
   const [username, setUsername] = useState(null);
   const [role, setRole] = useState(null); 
 
@@ -16,10 +16,8 @@ export default function AdminLayout({ children }) {
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
     if (storedUsername) {
-      // Set the username from local storage
       setUsername(storedUsername);
 
-      // Fetch role for that username
       fetch(`/api/user/role/${storedUsername}`)
         .then((res) => {
           if (!res.ok) throw new Error("Failed to fetch role");

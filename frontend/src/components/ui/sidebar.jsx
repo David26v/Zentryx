@@ -1,6 +1,21 @@
-import React, { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+"use client";
+
+import React, { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  LayoutDashboard,
+  UserCog,
+  User2,
+  CalendarDays,
+  Wallet,
+  Briefcase,
+  BarChart,
+  Activity,
+  Settings,
+  FileClock,
+  ClipboardCheck,
+} from "lucide-react";
 
 const Sidebar = ({ isOpen, role }) => {
   const [activeItem, setActiveItem] = useState("Dashboard");
@@ -9,82 +24,65 @@ const Sidebar = ({ isOpen, role }) => {
     setActiveItem(item);
   };
 
-
-  // Active and inactive styles
-  const activeStyle = "bg-[#826AF91A] text-[#2D99FF] font-semibold"; 
+  const activeStyle = "bg-[#826AF91A] text-[#2D99FF] font-semibold";
   const inactiveStyle = "text-gray-700";
 
   const admin = [
-    { label: "Dashboard", icon: "dashboard.svg", path: "/admin/dashboard" },
-    { label: "Projects", icon: "projects.svg", path: "/admin/project" },
-    { label: "Calendar", icon: "calendar.svg", path: "/admin/calendar" },
-    { label: "Uploads", icon: "uploads.svg", path: "/admin/uploads" },
-    { label: "Devices", icon: "devices.svg", path: "/admin/devices" },
-    { label: "Task", icon: "task.svg", path: "/admin/task" },
-    { label: "Report", icon: "reports.svg", path: "/admin/report" },
-    { label: "Notes", icon: "notes.svg", path: "/admin/notes" },
-    { label: "Users", icon: "users.svg", path: "/admin/users" },   
-    { label: "Settings", icon: "settings.svg", path: "/admin/settings" },
+    { label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
+    { label: "Employees", icon: Briefcase, path: "/admin/employees" },
+    { label: "Users", icon: UserCog, path: "/admin/users" },
+    { label: "Roles", icon: User2, path: "/admin/roles" },
+    { label: "Projects", icon: ClipboardCheck, path: "/admin/projects" }, // ✅ NEW
+    { label: "Attendance Logs", icon: CalendarDays, path: "/admin/attendance" },
+    { label: "Payroll", icon: Wallet, path: "/admin/payroll" },
+    { label: "Leave Requests", icon: FileClock, path: "/admin/leave-requests" },
+    { label: "Reports", icon: BarChart, path: "/admin/reports" },
+    { label: "Audit Trail", icon: Activity, path: "/admin/audit-trail" },
+    { label: "Settings", icon: Settings, path: "/admin/settings" },
   ];
 
   const user = [
-    { label: "Dashboard", icon: "dashboard.svg", path: "/users/dashboard" },
-    { label: "Projects", icon: "projects.svg", path: "/users/project" },
-    { label: "Calendar", icon: "calendar.svg", path: "/users/calendar" },
-    { label: "Uploads", icon: "uploads.svg", path: "/users/uploads" },
-    { label: "Devices", icon: "devices.svg", path: "/users/devices" },
-    { label: "Task", icon: "task.svg", path: "/users/task" },
-    { label: "Report", icon: "reports.svg", path: "/users/reports" },
-    { label: "Notes", icon: "notes.svg", path: "/users/notes" },
-    { label: "Users", icon: "users.svg", path: "/users/users" },   
-    { label: "Settings", icon: "settings.svg", path: "/users/settings" },
+    { label: "Dashboard", icon: LayoutDashboard, path: "/user/dashboard" },
+    { label: "My Tasks", icon: ClipboardCheck, path: "/user/tasks" },
+    { label: "Attendance", icon: CalendarDays, path: "/user/attendance" },
+    { label: "Leave Requests", icon: FileClock, path: "/user/leave-requests" },
+    { label: "My Payroll", icon: Wallet, path: "/user/payroll" },
+    { label: "Settings", icon: Settings, path: "/user/settings" },
   ];
 
-  const viewer = [
-    { label: "Dashboard", icon: "dashboard.svg", path: "/viewer/dashboard" },
-    { label: "Projects", icon: "projects.svg", path: "/viewer/project" },
-    { label: "Calendar", icon: "calendar.svg", path: "/viewer/calendar" },
-    { label: "Notes", icon: "notes.svg", path: "/viewer/notes" },
-  ];
-
-  const sidebarItems = 
-    role === 'admin' ? admin :
-    role === 'user' ? user :
-    viewer;
+  const sidebarItems = role === "admin" ? admin : user;
 
   return (
     <nav className="h-full bg-gray-200 p-4">
       {/* Logo and Title */}
-      <div className={`flex items-center gap-2 mb-6 transition-all duration-300 ${isOpen ? 'justify-start' : 'justify-center'}`}>
+      <div
+        className={`flex items-center gap-2 mb-6 transition-all duration-300 ${
+          isOpen ? "justify-start" : "justify-center"
+        }`}
+      >
         <Image src="/logo.png" alt="Logo" width={32} height={30} />
-        {isOpen && <span className="text-lg font-bold">SewerVersion</span>}
+        {isOpen && <span className="text-lg font-bold">Zentryx</span>}
       </div>
 
       {/* Sidebar Items */}
       <div className="flex flex-col space-y-2">
-        {sidebarItems.length === 0 ? (
-          <p className="text-center text-gray-500">No menu items available</p>
-        ) : (
-          sidebarItems.map((item) => (
-            <Link key={item.label} href={item.path}>
-              <div
-                className={`flex items-center space-x-3 h-[56px] px-4 rounded-2xl cursor-pointer transition-colors 
-                  ${activeItem === item.label ? activeStyle : `${inactiveStyle} hover:bg-gray-300`}`}
-                onClick={() => handleItemClick(item.label)}
-              >
-                <div className="flex items-center justify-center w-10">
-                  <Image 
-                    src={`/icons/${item.icon}`} 
-                    alt={`${item.label} Icon`} 
-                    width={24} 
-                    height={24} 
-                  />
-                </div>
-                {isOpen && <span className="text-base">{item.label}</span>}
+        {sidebarItems.map((item) => (
+          <Link key={item.label} href={item.path}>
+            <div
+              className={`flex items-center space-x-3 h-[56px] px-4 rounded-2xl cursor-pointer transition-colors ${
+                activeItem === item.label
+                  ? activeStyle
+                  : `${inactiveStyle} hover:bg-gray-300`
+              }`}
+              onClick={() => handleItemClick(item.label)}
+            >
+              <div className="flex items-center justify-center w-10">
+                <item.icon className="w-5 h-5 text-gray-700" />
               </div>
-            </Link>
-          ))
-        )}
+              {isOpen && <span className="text-base">{item.label}</span>}
+            </div>
+          </Link>
+        ))}
       </div>
     </nav>
   );

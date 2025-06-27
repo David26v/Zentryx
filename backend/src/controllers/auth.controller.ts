@@ -61,7 +61,6 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   const { usernameOrEmail, password } = req.body;
 
-  // Check if the input is an email or username
   const isEmail = usernameOrEmail.includes("@");
   
   const query = isEmail ? { email: usernameOrEmail } : { username: usernameOrEmail };

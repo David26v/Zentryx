@@ -4,6 +4,8 @@ import mongoose from 'mongoose';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
 import calendarRoutes from './routes/calendar';
+import roleRoutes from './routes/role';
+import employeeRoutes from './routes/employee';
 import path from 'path';
 import cors from 'cors'; 
 
@@ -24,6 +26,8 @@ app.use(cors({
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes); 
 app.use('/api/calendar',calendarRoutes);
+app.use('/api/employee',employeeRoutes);
+app.use('/api/role',roleRoutes);
 
 mongoose.connect(process.env.MONGO_URI!)
   .then(() => console.log('MongoDB connected'))

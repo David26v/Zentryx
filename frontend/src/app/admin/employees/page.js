@@ -1,54 +1,52 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import AddUserModal from "./AddUserModal";
 import { api } from "@/lib/helper";
 import { useAlert } from "@/components/providers/AlertProvider";
 import { useDialog } from "@/components/providers/DialogProvider";
 import SewerTable from "@/components/ui/SewerTable";
 import { useRouter } from "next/navigation";
-import CardList from "./CardList";
+import AddEmployee from "./components/AddEmployeeModal";
+import CardList from "./components/CardList";
+import { useUser } from "@/components/providers/UserContext";
 
-const UserPage = () => {
-  const [users, setUsers] = useState([]);
+const Employees = () => {
+  const [employee, setEmployee] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ role: "", plan: "", status: "" });
   const { showAlert } = useAlert();
   const { showDelete } = useDialog();
   const router = useRouter();
+  const {userId} = useUser();
 
   useEffect(() => {
-    fetchUsers();
+    fetchEmployees();
   }, []);
 
-  const fetchUsers = async () => {
+  console.log('userId',userId)
+
+  const fetchEmployees = async () => {
     try {
-      const { ok, data } = await api("/api/users/get-all-user", "GET");
+      const { ok, data } = await api("/api/employee/get-all-employees", "GET");
+      setEmployee (data);
       
-      if (ok && Array.isArray(data.users)) {
-        setUsers(data.users);
-      } 
-      else {
-        console.error("Failed to fetch users or users is not an array");
-        setUsers([]); // fail-safe
-      }
     } catch (error) {
       console.error("Fetch users error:", error);
-      setUsers([]);
+      setEmployee([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (user_id) => {
+  const handleDelete = async (employee_id) => {
     showDelete({
       title: "Delete User",
       description:
         "Are you sure it will be deleted to our system but you can create another one ?",
       onConfirm: async () => {
         try {
-          await api("/api/users/delete-account", "DELETE", { user_id });
-          setUsers((prev) => prev.filter((u) => u._id !== user_id));
+          await api("/api/employee/delete-employee", "DELETE", { employee_id });
+          setEmployee((prev) => prev.filter((e) => e._id !== employee_id));
           showAlert("User deleted", "success");
           fetchUsers();
         } catch (error) {
@@ -59,32 +57,42 @@ const UserPage = () => {
     });
   };
 
-  const filteredUsers = users.filter((u) => {
-    const matchesSearch = u.name?.toLowerCase().includes(search.toLowerCase());
-    const matchesRole = filters.role ? u.role === filters.role : true;
-    const matchesPlan = filters.plan ? u.plan === filters.plan : true;
-    const matchesStatus = filters.status ? u.status === filters.status : true;
-    return matchesSearch && matchesRole && matchesPlan && matchesStatus;
+  const filteredData = employee.filter((e) => {
+    const fullName = `${e.first_name} ${e.last_name}`.toLowerCase();
+    const matchesSearch = fullName.includes(search.toLowerCase());
+    const matchesRole = filters.role ? e.position === filters.role : true;
+    const matchesStatus = filters.status && filters.status !== "all" ? e.status === filters.status : true;
+    return matchesSearch && matchesRole && matchesStatus;
   });
+  ;
 
   const columns = [
     { key: "user", name: "Full Name" },
-    { key: "role", name: "ROLE" },
-    { key: "status", name: "STATUS" },
+    { key: "department", name: "Department" },
+    { key: "role", name: "Role" },
+    { key: "date_hired", name: "Date Hired" },
+    { key: "salary", name: "Salary" },
+    { key: "status", name: "Status" },
   ];
+  
 
-  const tableData = filteredUsers.map((u) => ({
+  const tableData = filteredData.map((employee) => ({
     user: {
-      name: u.name,
-      email: u.email,
-      avatar: u.avatar,
-      user_id: u.user_id,
+      name: `${employee.first_name} ${employee.last_name}`,
+      email: employee.email,
+      avatar: employee.avatar, 
+      user_id: employee.user_id,
     },
-    role: u.role,
-    plan: u.plan,
-    billing: u.billing || "N/A",
-    status: u.status,
+    email: employee.email,
+    department: employee.department,
+    position: employee.position,
+    role: employee.role?.name || "",
+    date_hired: new Date(employee.date_hired).toLocaleDateString(),
+    salary: `₱${employee.salary.toLocaleString()}`,
+    status: employee.status,
   }));
+  
+  
 
   const filterOptions = [
     {
@@ -96,18 +104,12 @@ const UserPage = () => {
         { label: "Viewer", value: "viewer" },
       ],
     },
-    {
-      key: "plan",
-      label: "Plan",
-      options: [
-        { label: "Enterprise", value: "Enterprise" },
-        { label: "Basic", value: "Basic" },
-      ],
-    },
+    
     {
       key: "status",
       label: "Status",
       options: [
+        { label: "all", value: "all" },
         { label: "Active", value: "Active" },
         { label: "Inactive", value: "Inactive" },
         { label: "Pending", value: "Pending" },
@@ -121,6 +123,8 @@ const UserPage = () => {
 
   return (
     <div className="">
+   
+     
       <CardList />
 
       <SewerTable
@@ -131,14 +135,14 @@ const UserPage = () => {
         onSearch={setSearch}
         onFilterChange={handleFilterChange}
         loading={loading}
-        ButtonPlacement={<AddUserModal fetchUser = {fetchUsers} />}
+        ButtonPlacement={<AddEmployee fetchEmployees = {fetchEmployees} />}
         onDelete={handleDelete}
         onView={(item) => {
-          router.push(`/admin/profile/${item.user.user_id}`);
+          router.push(`/admin/profile/${item.employee.employee_id}`);
         }}
       />
     </div>
   );
 };
 
-export default UserPage;
+export default Employees;
