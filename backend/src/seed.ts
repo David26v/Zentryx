@@ -1,27 +1,44 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import bcrypt from 'bcrypt';
-import User from './models/User';
+require('dotenv').config({ path: './.env.migration' });
+const { MongoClient } = require('mongodb');
 
-dotenv.config();
+const sourceUri = process.env.SOURCE_URI;
+const targetUri = process.env.TARGET_URI;
 
-const seed = async () => {
-  await mongoose.connect(process.env.MONGO_URI!);
-  await User.deleteMany({});
+async function migrate() {
+  const sourceClient = new MongoClient(sourceUri);
+  const targetClient = new MongoClient(targetUri);
 
-  const users = [
-    { email: 'admin@test.com', password: 'admin123', role: 'admin' },
-    { email: 'tech@test.com', password: 'tech123', role: 'user' },
-    { email: 'client@test.com', password: 'client123', role: 'viewer' },
-  ];
+  try {
+    await sourceClient.connect();
+    await targetClient.connect();
 
-  for (const user of users) {
-    user.password = await bcrypt.hash(user.password, 10);
-    await new User(user).save();
+    const sourceDb = sourceClient.db(); // cluster0 default
+    const targetDb = targetClient.db(); // zentryx target
+
+    const collections = await sourceDb.listCollections().toArray();
+
+    for (const { name } of collections) {
+      console.log(`Migrating collection: ${name}`);
+
+      const sourceColl = sourceDb.collection(name);
+      const targetColl = targetDb.collection(name);
+
+      const docs = await sourceColl.find({}).toArray();
+      if (docs.length > 0) {
+        await targetColl.insertMany(docs);
+        console.log(`✅ Migrated ${docs.length} documents to ${name}`);
+      } else {
+        console.log(`⚠️ No documents in ${name}`);
+      }
+    }
+
+    console.log("✅ Migration completed successfully.");
+  } catch (err) {
+    console.error("Migration failed:", err);
+  } finally {
+    await sourceClient.close();
+    await targetClient.close();
   }
+}
 
-  console.log('✅ Seed completed');
-  process.exit();
-};
-
-seed();
+migrate();

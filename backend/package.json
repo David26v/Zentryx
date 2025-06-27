@@ -1,5 +1,5 @@
 {
-  "name": "my-api-project",
+  "name": "zentryx_backend",
   "version": "1.0.0",
   "description": "A simple API project",
   "main": "src/index.ts",
