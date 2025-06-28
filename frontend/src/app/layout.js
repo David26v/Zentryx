@@ -2,7 +2,7 @@ import { AppProviders } from '@/components/providers';
 import './globals.css';
 
 export const metadata = {
-  title: 'SewerVision',
+  title: 'Zentryx-all in one Payrol',
   description: 'An awesome app',
 };
 

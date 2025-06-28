@@ -2,6 +2,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IEmployee extends Document {
+  user: mongoose.Types.ObjectId;
   first_name:string;
   last_name: string;
   role: mongoose.Types.ObjectId; 

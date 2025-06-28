@@ -17,20 +17,20 @@ const Employees = () => {
   const { showAlert } = useAlert();
   const { showDelete } = useDialog();
   const router = useRouter();
-  const {userId} = useUser();
+
 
   useEffect(() => {
     fetchEmployees();
   }, []);
 
-  console.log('userId',userId)
 
   const fetchEmployees = async () => {
     try {
       const { ok, data } = await api("/api/employee/get-all-employees", "GET");
       setEmployee (data);
-      
-    } catch (error) {
+      console.log('data',data)
+    } 
+    catch (error) {
       console.error("Fetch users error:", error);
       setEmployee([]);
     } finally {
@@ -45,7 +45,7 @@ const Employees = () => {
         "Are you sure it will be deleted to our system but you can create another one ?",
       onConfirm: async () => {
         try {
-          await api("/api/employee/delete-employee", "DELETE", { employee_id });
+          await api(`/api/employee/delete-employee/${employee_id}`, "DELETE");
           setEmployee((prev) => prev.filter((e) => e._id !== employee_id));
           showAlert("User deleted", "success");
           fetchUsers();
@@ -77,13 +77,14 @@ const Employees = () => {
   
 
   const tableData = filteredData.map((employee) => ({
+    _id: employee._id,
     user: {
-      name: `${employee.first_name} ${employee.last_name}`,
-      email: employee.email,
-      avatar: employee.avatar, 
-      user_id: employee.user_id,
+      name: `${employee.user.first_name} ${employee.user.last_name}`,
+      email: employee.user.email,
+      avatar: employee.user.avatar, 
+      user_id: employee.user._id,
     },
-    email: employee.email,
+    email: employee.user.email,
     department: employee.department,
     position: employee.position,
     role: employee.role?.name || "",
@@ -91,6 +92,7 @@ const Employees = () => {
     salary: `₱${employee.salary.toLocaleString()}`,
     status: employee.status,
   }));
+  
   
   
 
@@ -121,6 +123,10 @@ const Employees = () => {
     setFilters((prev) => ({ ...prev, [key]: val }));
   };
 
+   const ViewPage =(employee_id)=>{
+    router.push(`/admin/employees/${employee_id}`);
+   }
+
   return (
     <div className="">
    
@@ -138,8 +144,10 @@ const Employees = () => {
         ButtonPlacement={<AddEmployee fetchEmployees = {fetchEmployees} />}
         onDelete={handleDelete}
         onView={(item) => {
-          router.push(`/admin/profile/${item.employee.employee_id}`);
+          router.push(`/admin/employees/${item._id}`);
         }}
+        
+        
       />
     </div>
   );

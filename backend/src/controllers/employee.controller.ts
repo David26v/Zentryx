@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Employee from "../models/Employee";
+import Employee, { IEmployee } from "../models/Employee";
 import { sendEmail } from "../utils/sendEmail";
 import bcrypt from 'bcrypt';
 import User from "../models/User";
@@ -42,11 +42,11 @@ export const createEmployee = async (req: Request, res: Response) => {
       password: hashedPassword,
       first_name,
       last_name,
-      role: "user", // or default logic
+      role: "user",
     });
 
     const newEmployee = await Employee.create({
-      user_id: user._id,       
+      user: user._id, 
       first_name,
       last_name,
       role,
@@ -56,10 +56,11 @@ export const createEmployee = async (req: Request, res: Response) => {
       salary: salary || 0,
       date_hired,
       password: hashedPassword,
-      created_by,                   
+      created_by,
       update_by,
       sent_email: true,
     });
+    
 
     // 4. Send invitation email
     const subject = "You're invited to the system";
@@ -84,8 +85,8 @@ export const createEmployee = async (req: Request, res: Response) => {
 export const getAllEmployees = async (_req: Request, res: Response) => {
   try {
     const employees = await Employee.find()
-      .populate("user", "email avatar first_name last_name")
-      .populate("role", "name"); // assuming Role model has a 'name' field
+      .populate("user")
+      .populate("role", "name"); 
 
     res.status(200).json(employees);
   } catch (error) {
@@ -100,7 +101,9 @@ export const getAllEmployees = async (_req: Request, res: Response) => {
 // Get Single Employee
 export const getEmployee = async (req: Request, res: Response) => {
   try {
-    const employee = await Employee.findById(req.params.id).populate("userId", "-password");
+    const employee = await Employee.findById(req.params.id)
+    .populate("user", "-password")
+    .populate("role",'name');
     if (!employee) return res.status(404).json({ message: "Employee not found" });
 
     res.status(200).json(employee);
@@ -127,15 +130,25 @@ export const updateEmployee = async (req: Request, res: Response) => {
   }
 }
 
-// Delete Employee
 export const deleteEmployee = async (req: Request, res: Response) => {
   try {
-    const deleted = await Employee.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: "Employee not found" });
+    const { id } = req.params;
 
-    res.status(200).json({ message: "Employee deleted successfully" });
+    // Cast deleted to IEmployee so .user won't throw TS error
+    const deleted = await Employee.findByIdAndDelete(id) as IEmployee | null;
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    // Delete the associated user
+    if (deleted.user) {
+      await User.findByIdAndDelete(deleted.user);
+    }
+
+    res.status(200).json({ message: "Employee and associated user deleted successfully" });
   } catch (error) {
     console.error("Error deleting employee:", error);
     res.status(500).json({ message: "Failed to delete employee" });
   }
-}
+};

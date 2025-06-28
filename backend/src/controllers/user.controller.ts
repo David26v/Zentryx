@@ -7,9 +7,7 @@ import mongoose from 'mongoose';
 
 import { GridFSBucket } from "mongodb";
 
-interface GridFsFile extends Express.Multer.File {
-  id: string;
-}
+
 
 export const getUserRole = async (req: Request, res: Response) => {
   try {

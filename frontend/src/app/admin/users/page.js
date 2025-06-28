@@ -134,7 +134,7 @@ const UserPage = () => {
         ButtonPlacement={<AddUserModal fetchUser = {fetchUsers} />}
         onDelete={handleDelete}
         onView={(item) => {
-          router.push(`/admin/profile/${item.user.user_id}`);
+          router.push(`/admin/users/${item.user.user_id}`);
         }}
       />
     </div>
